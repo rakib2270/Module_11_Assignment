@@ -3,12 +3,12 @@
 @extends('layouts.app')
 
 @section('content')
-    <div>
+    <div style="width: auto; padding:5px; ">
         @if (session('success'))
-        <div class="alert alert-success alert-dismissable fade-show" role="alert">
+        <div style="color: red;" class="alert alert-success alert-dismissable fade-show" role="alert">
             <i class="mdi mdi-check-all me6-2"></i>
             {{session('success')}}
-            <button type="button" class="btn-close" data-bs-dismis="alert" area-label="close" ></button>
+            <button type="button" class="btn-close" data-bs-dismis="alert" area-label="close" ><a href="/products/create">OK</a></button>
             @endif
 
         </div>
@@ -17,7 +17,7 @@
 
     <div class="create-product">
         <h2 class="text-2xl font-bold mb-4">Add New Product</h2>
-        <form action="{{route('store')}}" method="post">
+        <form action="{{route('store')}}" method="POST">
             @csrf
             <div class="mb-4">
                 <label for="name" class="block text-gray-600">Product Name:</label>

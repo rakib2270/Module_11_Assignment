@@ -23,25 +23,20 @@ class ProductController extends Controller
 
 
 //====================store method====================
+// In your ProductController.php store method
+
 public function store(Request $request)
 {
-    $this->validate($request,[
+    $validatedData = $request->validate([
         'name' => 'required|string|max:255',
         'price' => 'required|numeric',
         'quantity' => 'required|integer',
-        'description' => 'integer',
+        'description' => 'nullable',
     ]);
 
-    DB::table('products')->insert([
-        'name'=>$request->name,
-        'price'=>$request->price,
-        'quantity'=>$request->quantity,
-        'description'=>$request->description,
-    ]);
+    DB::table('products')->insert($validatedData);
 
-    dd:
-
-    return redirect('/dashboard')->with('success', 'Product added successfully!');
+    return redirect('/products/create')->with('success', 'Product added successfully!');
 }
 
 
