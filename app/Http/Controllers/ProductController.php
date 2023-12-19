@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+
 class ProductController extends Controller
 {
 
@@ -14,7 +15,6 @@ class ProductController extends Controller
     {
         return view('layouts.app');
     }
-
       public function createForm()
     {
         return view('products.create');
@@ -22,16 +22,25 @@ class ProductController extends Controller
 
 
 
-//====================store method====================
-// In your ProductController.php store method
 
+    //====================All Products====================
+    public function products()
+    {
+        $products = DB::table('products')->get();
+
+        return view('products/all-product', compact('products'));
+
+    }
+
+
+//====================store method====================
 public function store(Request $request)
 {
     $validatedData = $request->validate([
-        'name' => 'required|string|max:255',
+        'name' => 'required|string|max:25',
         'price' => 'required|numeric',
         'quantity' => 'required|integer',
-        'description' => 'nullable',
+        'description' => 'nullable|string|max:255',
     ]);
 
     DB::table('products')->insert($validatedData);
@@ -56,20 +65,103 @@ public function store(Request $request)
 
 
 
-//====================store method====================
-public function updatePrice($productId, $newPrice)
+//====================View All Products====================
+
+    public function updateView()
+    {
+        $products = DB::table('products')->get();
+
+        return view('products/update-product', compact('products'));
+
+    }
+
+
+
+
+
+
+//====================Update Price====================
+
+    public function updatePrice(Request $request, $productId)
 {
-    // Update product price
+    $newPrice = $request->input('new_price');
+
     DB::table('products')->where('id', $productId)->update(['price' => $newPrice]);
 
-    return redirect('/dashboard')->with('success', 'Product price updated successfully!');
+    return redirect('/products/update-product')->with('success', 'Product price updated successfully!');
 }
 
 
 
 
 
-//====================TO Show All Products====================
+//====================Update Quantity====================
+
+public function updateQuantity(Request $request, $productId)
+{
+    $newQuantity = $request->input('new_quantity');
+
+    DB::table('products')->where('id', $productId)->update(['quantity' => $newQuantity]);
+
+    return redirect('/products/update-product')->with('success', 'Product quantity updated successfully!');
+}
+
+
+
+
+
+
+//====================Sale  Product====================
+
+    public function sellProduct(Request $request, $productId)
+    {
+
+        $quantitySold = $request->input('quantity_sold');
+        // Retrieve product details
+        $product = DB::table('products')->find($productId);
+
+        // Ensure there is enough quantity to sell
+        if ($product->quantity >= $quantitySold) {
+            // Record the transaction
+            DB::table('transactions')->insert([
+                'product_id' => $productId,
+                'product_name' => $product->name,
+                'price' => $product->price,
+                'quantity' => $quantitySold,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+
+            // Update product quantity
+            DB::table('products')->where('id', $productId)->decrement('quantity', $quantitySold);
+
+            return redirect('/products/update-product')->with('success', 'Product sold successfully!');
+        } else {
+            return redirect('/products/update-product')->with('error', 'Not enough quantity to sell!');
+        }
+    }
+
+
+
+
+
+
+
+//====================Delete A Product====================
+
+    public function deleteProduct($productId)
+    {
+
+        DB::table('products')->where('id', $productId)->delete();
+
+        return redirect('/products/update-product')->with('success', 'Product deleted successfully!');
+    }
+
+
+
+
+//====================Sales Summary===================
     public function dashboard()
     {
         // Calculate sales figures for today, yesterday, this month, and last month
@@ -85,7 +177,7 @@ public function updatePrice($productId, $newPrice)
 
 
 
-    //====================TO Show All Transactions====================
+    //====================All Transactions====================
     public function transactionHistory()
     {
         // Fetch all product transactions
@@ -93,4 +185,13 @@ public function updatePrice($productId, $newPrice)
 
         return view('transaction-history', compact('transactions'));
     }
+
+
+
+
+
 }
+
+
+
+
